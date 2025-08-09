@@ -2,23 +2,15 @@ module allowlist_addr::allowlist_management {
     use std::signer;
     use aptos_framework::timestamp;
     use std::table::{Self, Table};
-
-    /// Error codes
     const E_NOT_AUTHORIZED: u64 = 1;
     const E_EXPIRED: u64 = 2;
-
-    /// Allowlist entry structure
     struct AllowlistEntry has store, drop {
         expiration_time: u64,
     }
-
-    /// Main allowlist resource
     struct Allowlist has key {
         entries: Table<address, AllowlistEntry>,
         admin: address,
     }
-
-    /// Initialize the allowlist (called once by deployer)
     fun init_module(admin: &signer) {
         let admin_addr = signer::address_of(admin);
         move_to(admin, Allowlist {
@@ -26,8 +18,6 @@ module allowlist_addr::allowlist_management {
             admin: admin_addr,
         });
     }
-
-    /// Function 1: Add address to allowlist with expiration time
     public entry fun add_to_allowlist(
         admin: &signer,
         target_address: address,
@@ -44,8 +34,6 @@ module allowlist_addr::allowlist_management {
         
         table::upsert(&mut allowlist.entries, target_address, entry);
     }
-
-    /// Function 2: Check if address is currently allowed (not expired)
     public fun is_allowed(target_address: address): bool acquires Allowlist {
         if (!exists<Allowlist>(@allowlist_addr)) {
             return false
@@ -62,4 +50,5 @@ module allowlist_addr::allowlist_management {
         
         current_time < entry.expiration_time
     }
+
 }
